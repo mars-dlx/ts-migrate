@@ -34,7 +34,7 @@ function withExplicitAny(
   text: string,
   diagnostics: ts.DiagnosticWithLocation[],
   anyAlias?: string,
-  lintConfig?: any,
+  lintConfig?: LintConfig,
 ): string {
   const root = j(text, lintConfig);
 
@@ -80,6 +80,7 @@ function withExplicitAny(
 
 // TS2683: "'this' implicitly has type 'any' because it does not have a type annotation."
 function replaceTS2683(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   root: Collection<any>,
   diagnostics: ts.DiagnosticWithLocation[],
   typeAnnotation: TSTypeAnnotation,
@@ -90,6 +91,7 @@ function replaceTS2683(
     root
       .find(
         j.ThisExpression,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (node: any) =>
           node.start === diagnostic.start && node.end === diagnostic.start + diagnostic.length,
       )
@@ -116,6 +118,7 @@ function replaceTS2683(
 // TS7006: "Parameter '{0}' implicitly has an '{1}' type."
 // TS7008: "Member '{0}' implicitly has an '{1}' type."
 function replaceTS7006AndTS7008(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   root: Collection<any>,
   diagnostics: ts.DiagnosticWithLocation[],
   typeAnnotation: TSTypeAnnotation,
@@ -124,6 +127,7 @@ function replaceTS7006AndTS7008(
     root
       .find(
         j.Identifier,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (node: any) =>
           node.start === diagnostic.start &&
           node.end === diagnostic.start + diagnostic.length &&
@@ -176,6 +180,7 @@ function replaceTS7006AndTS7008(
 
 // TS7019: "Rest parameter '{0}' implicitly has an 'any[]' type."
 function replaceTS7019(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   root: Collection<any>,
   diagnostics: ts.DiagnosticWithLocation[],
   typeAnnotation: TSTypeAnnotation,
@@ -184,6 +189,7 @@ function replaceTS7019(
     root
       .find(
         j.RestElement,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (node: any) =>
           node.start === diagnostic.start &&
           node.end === diagnostic.start + diagnostic.length &&
@@ -197,10 +203,12 @@ function replaceTS7019(
 
 // TS7031: "Binding element '{0}' implicitly has an '{1}' type."
 function replaceTS7031(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   root: Collection<any>,
   diagnostics: ts.DiagnosticWithLocation[],
   typeAnnotation: TSTypeAnnotation,
 ) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const getParentObjectPattern = (path: any) => {
     let res = path;
     while (
@@ -218,6 +226,7 @@ function replaceTS7031(
     root.find(j.ObjectPattern).forEach((path) => {
       if (path.node.typeAnnotation == null) {
         const propertyIndex = path.node.properties.findIndex(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (property: any) =>
             property.start === diagnostic.start &&
             property.end === diagnostic.start + diagnostic.length &&
@@ -236,6 +245,7 @@ function replaceTS7031(
 
 // TS7034: Variable '{0}' implicitly has type '{1}' in some locations where its type cannot be determined.
 function replaceTS7034(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   root: Collection<any>,
   diagnostics: ts.DiagnosticWithLocation[],
   typeAnnotation: TSTypeAnnotation,
@@ -244,6 +254,7 @@ function replaceTS7034(
     root
       .find(j.Identifier)
       .filter(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (path: any) =>
           path.node.start === diagnostic.start &&
           path.node.end === diagnostic.start + diagnostic.length &&
@@ -263,6 +274,7 @@ function replaceTS7034(
 
 // TS2459: Type '{0}' has no property '{1}' and no string index signature.
 function replaceTS2459(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   root: Collection<any>,
   diagnostics: ts.DiagnosticWithLocation[],
   typeAnnotation: TSTypeAnnotation,
@@ -271,6 +283,7 @@ function replaceTS2459(
     root
       .find(j.Identifier)
       .filter(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (path: any) =>
           path.node.start === diagnostic.start &&
           path.node.end === diagnostic.start + diagnostic.length &&
@@ -311,6 +324,7 @@ function replaceTS2459(
 
 // TS2525: Initializer provides no value for this binding element and the binding element has no default value.
 function replaceTS2525(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   root: Collection<any>,
   diagnostics: ts.DiagnosticWithLocation[],
   typeAnnotation: TSTypeAnnotation,
@@ -319,6 +333,7 @@ function replaceTS2525(
     root
       .find(j.Identifier)
       .filter(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (path: any) =>
           path.node.start === diagnostic.start &&
           path.node.end === diagnostic.start + diagnostic.length &&
