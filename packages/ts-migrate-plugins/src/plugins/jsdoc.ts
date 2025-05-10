@@ -9,22 +9,6 @@ import {
 } from '../utils/validateOptions';
 import UpdateTracker from './utils/update';
 
-// type SignatureDeclaration =
-// const a: ts.CallSignatureDeclaration;
-// const a: ts.ConstructSignatureDeclaration;
-// const a: ts.MethodSignature;
-// a.
-// const a: ts.IndexSignatureDeclaration;
-// const a: ts.FunctionTypeNode;
-// const a: ts.ConstructorTypeNode;
-// const a: ts.JSDocFunctionType;
-// const a: ts.FunctionDeclaration;
-// const a: ts.MethodDeclaration;
-// const a: ts.ConstructorDeclaration;
-// const a: ts.AccessorDeclaration;
-// const a: ts.FunctionExpression;
-// const a: ts.ArrowFunction;
-
 type TypeMap = Record<string, TypeOptions>;
 
 type TypeOptions =

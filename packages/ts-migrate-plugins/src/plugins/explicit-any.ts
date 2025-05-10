@@ -45,9 +45,9 @@ function withExplicitAny(
     diagnostics.filter((diagnostic) => diagnostic.code === 2683),
     typeAnnotation,
   );
-  replaceTS7006AndTS7008(
+  replaceTS7005AndTS7006AndTS7008(
     root,
-    diagnostics.filter((diagnostic) => diagnostic.code === 7006 || diagnostic.code === 7008),
+    diagnostics.filter((diagnostic) => [7005, 7006, 7008].includes(diagnostic.code)),
     typeAnnotation,
   );
   replaceTS7019(
@@ -65,16 +65,16 @@ function withExplicitAny(
     diagnostics.filter((diagnostic) => diagnostic.code === 7034),
     typeAnnotation,
   );
-  replaceTS2459(
-    root,
-    diagnostics.filter((diagnostic) => diagnostic.code === 2459),
-    typeAnnotation,
-  );
-  replaceTS2525(
-    root,
-    diagnostics.filter((diagnostic) => diagnostic.code === 2525),
-    typeAnnotation,
-  );
+  // replaceTS2459(
+  //   root,
+  //   diagnostics.filter((diagnostic) => diagnostic.code === 2459),
+  //   typeAnnotation,
+  // );
+  // replaceTS2525(
+  //   root,
+  //   diagnostics.filter((diagnostic) => diagnostic.code === 2525),
+  //   typeAnnotation,
+  // );
   return root.toSource(lintConfig);
 }
 
@@ -115,9 +115,10 @@ function replaceTS2683(
   });
 }
 
+// TS7005: "Variable '{0}' implicitly has an '{1}' type."
 // TS7006: "Parameter '{0}' implicitly has an '{1}' type."
 // TS7008: "Member '{0}' implicitly has an '{1}' type."
-function replaceTS7006AndTS7008(
+function replaceTS7005AndTS7006AndTS7008(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   root: Collection<any>,
   diagnostics: ts.DiagnosticWithLocation[],
@@ -273,84 +274,86 @@ function replaceTS7034(
 }
 
 // TS2459: Type '{0}' has no property '{1}' and no string index signature.
-function replaceTS2459(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  root: Collection<any>,
-  diagnostics: ts.DiagnosticWithLocation[],
-  typeAnnotation: TSTypeAnnotation,
-) {
-  diagnostics.forEach((diagnostic) => {
-    root
-      .find(j.Identifier)
-      .filter(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (path: any) =>
-          path.node.start === diagnostic.start &&
-          path.node.end === diagnostic.start + diagnostic.length &&
-          path.node.typeAnnotation == null,
-      )
-      .forEach((path) => {
-        let newNode = path.parentPath;
-        // The error will only provide the location of the left hand side identifier
-        // so we have to find the variable declarator by traveling back up
-        while (newNode.parentPath && !j.VariableDeclarator.check(newNode.node)) {
-          newNode = newNode.parentPath;
-        }
-        if (newNode.get('init')) {
-          // init returns the right hand side identifier
-          const rightHandSideNodePath = newNode.get('init');
-          const name = rightHandSideNodePath.getValueProperty('name');
-          let { scope } = rightHandSideNodePath;
-          // we check if the current scope declares the identifier
-          // if not we move up to the parent scope
-          while (scope && scope.parent && !scope.declares(name)) {
-            scope = scope.parent;
-          }
-          if (scope && scope.getBindings()[name]) {
-            const binding = scope.getBindings()[name][0];
-            if (
-              j.AssignmentPattern.check(binding.parentPath.node) &&
-              j.ObjectExpression.check(binding.parentPath.node.right) &&
-              binding.parentPath.node.right.properties.length === 0 &&
-              binding.node.typeAnnotation == null
-            ) {
-              binding.get('typeAnnotation').replace(typeAnnotation);
-            }
-          }
-        }
-      });
-  });
-}
+// Removed
+// function replaceTS2459(
+//   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//   root: Collection<any>,
+//   diagnostics: ts.DiagnosticWithLocation[],
+//   typeAnnotation: TSTypeAnnotation,
+// ) {
+//   diagnostics.forEach((diagnostic) => {
+//     root
+//       .find(j.Identifier)
+//       .filter(
+//         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//         (path: any) =>
+//           path.node.start === diagnostic.start &&
+//           path.node.end === diagnostic.start + diagnostic.length &&
+//           path.node.typeAnnotation == null,
+//       )
+//       .forEach((path) => {
+//         let newNode = path.parentPath;
+//         // The error will only provide the location of the left hand side identifier
+//         // so we have to find the variable declarator by traveling back up
+//         while (newNode.parentPath && !j.VariableDeclarator.check(newNode.node)) {
+//           newNode = newNode.parentPath;
+//         }
+//         if (newNode.get('init')) {
+//           // init returns the right hand side identifier
+//           const rightHandSideNodePath = newNode.get('init');
+//           const name = rightHandSideNodePath.getValueProperty('name');
+//           let { scope } = rightHandSideNodePath;
+//           // we check if the current scope declares the identifier
+//           // if not we move up to the parent scope
+//           while (scope && scope.parent && !scope.declares(name)) {
+//             scope = scope.parent;
+//           }
+//           if (scope && scope.getBindings()[name]) {
+//             const binding = scope.getBindings()[name][0];
+//             if (
+//               j.AssignmentPattern.check(binding.parentPath.node) &&
+//               j.ObjectExpression.check(binding.parentPath.node.right) &&
+//               binding.parentPath.node.right.properties.length === 0 &&
+//               binding.node.typeAnnotation == null
+//             ) {
+//               binding.get('typeAnnotation').replace(typeAnnotation);
+//             }
+//           }
+//         }
+//       });
+//   });
+// }
 
 // TS2525: Initializer provides no value for this binding element and the binding element has no default value.
-function replaceTS2525(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  root: Collection<any>,
-  diagnostics: ts.DiagnosticWithLocation[],
-  typeAnnotation: TSTypeAnnotation,
-) {
-  diagnostics.forEach((diagnostic) => {
-    root
-      .find(j.Identifier)
-      .filter(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (path: any) =>
-          path.node.start === diagnostic.start &&
-          path.node.end === diagnostic.start + diagnostic.length &&
-          path.node.typeAnnotation == null,
-      )
-      .forEach((path) => {
-        const potentialObjDestructionNode = path.parentPath.parentPath.parentPath;
-        if (
-          j.ObjectPattern.check(potentialObjDestructionNode.node) &&
-          (j.AssignmentPattern.check(potentialObjDestructionNode.parentPath.node) ||
-            j.VariableDeclarator.check(potentialObjDestructionNode.parentPath.node)) &&
-          // to prevent adding a type to the obj destruction inside of the destruction
-          !j.ObjectProperty.check(potentialObjDestructionNode.parentPath.parentPath.node) &&
-          potentialObjDestructionNode.node.typeAnnotation == null
-        ) {
-          potentialObjDestructionNode.get('typeAnnotation').replace(typeAnnotation);
-        }
-      });
-  });
-}
+// Removed
+// function replaceTS2525(
+//   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//   root: Collection<any>,
+//   diagnostics: ts.DiagnosticWithLocation[],
+//   typeAnnotation: TSTypeAnnotation,
+// ) {
+//   diagnostics.forEach((diagnostic) => {
+//     root
+//       .find(j.Identifier)
+//       .filter(
+//         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//         (path: any) =>
+//           path.node.start === diagnostic.start &&
+//           path.node.end === diagnostic.start + diagnostic.length &&
+//           path.node.typeAnnotation == null,
+//       )
+//       .forEach((path) => {
+//         const potentialObjDestructionNode = path.parentPath.parentPath.parentPath;
+//         if (
+//           j.ObjectPattern.check(potentialObjDestructionNode.node) &&
+//           (j.AssignmentPattern.check(potentialObjDestructionNode.parentPath.node) ||
+//             j.VariableDeclarator.check(potentialObjDestructionNode.parentPath.node)) &&
+//           // to prevent adding a type to the obj destruction inside of the destruction
+//           !j.ObjectProperty.check(potentialObjDestructionNode.parentPath.parentPath.node) &&
+//           potentialObjDestructionNode.node.typeAnnotation == null
+//         ) {
+//           potentialObjDestructionNode.get('typeAnnotation').replace(typeAnnotation);
+//         }
+//       });
+//   });
+// }
